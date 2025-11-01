@@ -28,28 +28,51 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
-      <h2>Dashboard</h2>
-      <h3>Welcome, {user && user.name}</h3>
+    <div className="max-w-4xl mx-auto mt-10">
+      <h2 className="text-3xl font-bold">Dashboard</h2>
+      <h3 className="text-xl text-gray-700 mb-6">Welcome, {user && user.name}</h3>
 
-      <form onSubmit={onPostSubmit} style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '1rem 0'}}>
-        <textarea placeholder="Create a post" value={text} onChange={(e) => setText(e.target.value)} rows="3" required></textarea>
-        <button type="submit">Submit</button>
+      {/* --- Create Post Form --- */}
+      <form onSubmit={onPostSubmit} className="mb-8 p-6 bg-white rounded-lg shadow">
+        <h4 className="text-lg font-semibold mb-3">Create a New Post</h4>
+        <textarea
+          placeholder="What's on your mind?"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows="3"
+          required
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        ></textarea>
+        <button 
+          type="submit"
+          className="mt-3 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Submit Post
+        </button>
       </form>
+      {/* --- End Form --- */}
 
+      {/* --- Posts List --- */}
       <div>
-        <h3>Posts</h3>
-        {posts.map((post) => (
-          <div key={post._id} style={{border: '1px solid #ccc', padding: '1rem', margin: '0.5rem 0'}}>
-            <p>{post.text}</p>
-            <small>Posted by: {post.name}</small><br />
-            {user && post.user === user._id && (
-              <button onClick={() => deletePost(post._id)} style={{background: '#dc3545', color: 'white', border: 'none', cursor: 'pointer', marginTop: '0.5rem'}}>
-                Delete
-              </button>
-            )}
-          </div>
-        ))}
+        <h3 className="text-2xl font-bold mb-4">Posts Feed</h3>
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <div key={post._id} className="p-4 bg-white rounded-lg shadow">
+              <p className="text-gray-800 mb-2">{post.text}</p>
+              <div className="flex justify-between items-center">
+                <small className="text-gray-500">Posted by: {post.name}</small>
+                {user && post.user === user._id && (
+                  <button 
+                    onClick={() => deletePost(post._id)} 
+                    className="px-3 py-1 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
