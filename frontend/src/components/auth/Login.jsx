@@ -15,10 +15,14 @@ const Login = () => {
           <h2 className="text-3xl font-bold text-center text-gray-900">Login</h2>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label 
+              htmlFor="email" // <-- ADD THIS
+              className="block text-sm font-medium text-gray-700"
+            >
               Email
             </label>
             <input
+              id="email" // <-- ADD THIS
               type="email"
               name="email"
               placeholder="Email"
@@ -29,10 +33,14 @@ const Login = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label 
+              htmlFor="password" // <-- ADD THIS
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <input
+              id="password" // <-- ADD THIS
               type="password"
               name="password"
               placeholder="Password"
