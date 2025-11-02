@@ -19,12 +19,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return;
     }
+    // Set token on API header for authenticated requests
+    api.defaults.headers.common['x-auth-token'] = localStorage.token;
+
     try {
       const res = await api.get('/auth');
       setUser(res.data);
       setIsAuthenticated(true);
     } catch (err) {
+      // Token is invalid, remove it
       localStorage.removeItem('token');
+      delete api.defaults.headers.common['x-auth-token'];
     }
     setLoading(false);
   };
@@ -36,7 +41,8 @@ export const AuthProvider = ({ children }) => {
       await loadUser();
       navigate('/dashboard');
     } catch (err) {
-      console.error('Registration failed', err.response.data.msg);
+      // Ensure we log the actual error response message
+      console.error('Registration failed', err.response ? err.response.data.msg : err.message);
     }
   };
 
@@ -45,14 +51,19 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/login', formData);
       localStorage.setItem('token', res.data.token);
       await loadUser();
-      navigate('/dashboard');
+      
+      // ✅ YOUR NAVIGATION LOGIC IS CORRECT
+      navigate('/dashboard'); 
+      
     } catch (err) {
-      console.error('Login failed', err.response.data.msg);
+      // Ensure we log the actual error response message
+      console.error('Login failed', err.response ? err.response.data.msg : err.message);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    delete api.defaults.headers.common['x-auth-token'];
     setUser(null);
     setIsAuthenticated(false);
     navigate('/login');
@@ -62,7 +73,8 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{ user, isAuthenticated, loading, register, login, logout }}
     >
-      {!loading && children}
+      {/* Renders children only after the initial loading check is complete */}
+      {!loading && children} 
     </AuthContext.Provider>
   );
 };

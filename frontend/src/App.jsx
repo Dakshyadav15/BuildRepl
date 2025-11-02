@@ -6,7 +6,8 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
 import PrivateRoute from './components/routing/PrivateRoute';
-
+import CreatePost from './components/post/CreatePost';
+import PostItem from './components/post/PostItem';
 const App = () => {
   return (
     <AuthProvider>
