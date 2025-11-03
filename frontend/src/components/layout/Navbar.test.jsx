@@ -5,7 +5,7 @@ import { describe, test, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 
 import Navbar from './Navbar'; // Adjust this path if needed
-import  AuthContext  from '../../context/AuthContext'; // Adjust this path
+import AuthContext from '../../context/AuthContext'; // Adjust this path
 
 // We create a helper function to avoid repeating this setup.
 // It renders the Navbar wrapped in the necessary providers.
@@ -20,7 +20,6 @@ const renderNavbarWithContext = (contextValue) => {
 };
 
 describe('Navbar Component', () => {
-
   test('renders "Login" and "Register" links when logged out', () => {
     // 1. Define the mock context state for a logged-out user
     const loggedOutState = {
@@ -60,5 +59,4 @@ describe('Navbar Component', () => {
     expect(screen.queryByText('Login')).not.toBeInTheDocument();
     expect(screen.queryByText('Register')).not.toBeInTheDocument();
   });
-
 });

@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 const PostItem = ({ post }) => {
   return (
     <div className="p-4 my-4 bg-white rounded-lg shadow-md">
-      
       {/* --- THIS IS THE NEW CODE --- */}
       {/* Check if post.imageUrl exists, and if so, display it */}
       {post.imageUrl && (
@@ -13,11 +12,11 @@ const PostItem = ({ post }) => {
           src={post.imageUrl}
           alt={post.title}
           // E2E test: cy.get('img.post-cover-image')
-          className="post-cover-image w-full h-auto rounded-md mb-4" 
+          className="post-cover-image w-full h-auto rounded-md mb-4"
         />
       )}
       {/* --- END NEW CODE --- */}
-      
+
       <h3 className="text-xl font-bold">
         <Link to={`/posts/${post._id}`}>{post.title}</Link>
       </h3>

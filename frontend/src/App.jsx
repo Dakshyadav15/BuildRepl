@@ -20,22 +20,37 @@ const App = () => {
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route 
-            path="/dashboard" 
-            element={ <PrivateRoute> <Dashboard /> </PrivateRoute> } 
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                {' '}
+                <Dashboard />{' '}
+              </PrivateRoute>
+            }
           />
-          <Route 
-            path="/create-post" 
-            element={ <PrivateRoute> <CreatePost /> </PrivateRoute> } 
+          <Route
+            path="/create-post"
+            element={
+              <PrivateRoute>
+                {' '}
+                <CreatePost />{' '}
+              </PrivateRoute>
+            }
           />
-          <Route 
-            path="/posts/:id" 
-            element={ <PrivateRoute> <PostItem /> </PrivateRoute> } 
+          <Route
+            path="/posts/:id"
+            element={
+              <PrivateRoute>
+                {' '}
+                <PostItem />{' '}
+              </PrivateRoute>
+            }
           />
-          
+
           {/* --- 2. ADD THE SEARCH ROUTE --- */}
           <Route path="/search" element={<Search />} />
-          
+
           <Route path="/" element={<Login />} />
         </Routes>
       </div>

@@ -42,7 +42,10 @@ export const AuthProvider = ({ children }) => {
       navigate('/dashboard');
     } catch (err) {
       // Ensure we log the actual error response message
-      console.error('Registration failed', err.response ? err.response.data.msg : err.message);
+      console.error(
+        'Registration failed',
+        err.response ? err.response.data.msg : err.message
+      );
     }
   };
 
@@ -51,13 +54,15 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/login', formData);
       localStorage.setItem('token', res.data.token);
       await loadUser();
-      
+
       // ✅ YOUR NAVIGATION LOGIC IS CORRECT
-      navigate('/dashboard'); 
-      
+      navigate('/dashboard');
     } catch (err) {
       // Ensure we log the actual error response message
-      console.error('Login failed', err.response ? err.response.data.msg : err.message);
+      console.error(
+        'Login failed',
+        err.response ? err.response.data.msg : err.message
+      );
     }
   };
 
@@ -74,7 +79,7 @@ export const AuthProvider = ({ children }) => {
       value={{ user, isAuthenticated, loading, register, login, logout }}
     >
       {/* Renders children only after the initial loading check is complete */}
-      {!loading && children} 
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
