@@ -38,22 +38,22 @@ const getOrSetCache = async (key, cb, expiration = 3600) => {
       console.warn('Redis client is not connected. Bypassing cache.');
       return await cb();
     }
-    
+
     const cachedData = await redisClient.get(key);
-    
+
     if (cachedData) {
       console.log(`Cache HIT for key: ${key}`);
       return JSON.parse(cachedData);
     }
-    
+
     const freshData = await cb();
     await redisClient.setEx(key, expiration, JSON.stringify(freshData));
-    
+
     return freshData;
   } catch (err) {
-    if (process.env.NODE_ENV !== 'test') { 
-        console.error('Cache error:', err);
-      }
+    if (process.env.NODE_ENV !== 'test') {
+      console.error('Cache error:', err);
+    }
     return await cb();
   }
 };
@@ -78,17 +78,18 @@ const invalidateCache = async (key) => {
 const invalidateCachePattern = async (pattern) => {
   try {
     if (redisClient.isOpen) {
-      const keys = await redisClient.keys(pattern); 
+      const keys = await redisClient.keys(pattern);
       if (keys.length > 0) {
         await redisClient.del(keys);
-        console.log(`Cache invalidated for pattern: ${pattern}, keys: ${keys.length}`);
+        console.log(
+          `Cache invalidated for pattern: ${pattern}, keys: ${keys.length}`
+        );
       }
     }
   } catch (err) {
     console.error('Cache pattern invalidation error:', err);
   }
 };
-
 
 module.exports = {
   redisClient,

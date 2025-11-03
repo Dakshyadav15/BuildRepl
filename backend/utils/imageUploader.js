@@ -28,20 +28,22 @@ const uploadImage = (buffer) => {
   return new Promise((resolve, reject) => {
     // Create an upload stream
     const stream = cloudinary.uploader.upload_stream(
-      { 
+      {
         resource_type: 'auto',
         folder: 'social-media-posts', // Optional: organize in folders
       },
       (error, result) => {
         if (error) {
-             // The console log must be removed or moved outside this test environment
-             return reject(error);
-           }
-            
-            // 💥 FIX: Guard clause to prevent reading from null/undefined result 💥
-            if (!result || !result.secure_url) {
-                return reject(new Error("Upload result was incomplete or missing URL."));
-            }
+          // The console log must be removed or moved outside this test environment
+          return reject(error);
+        }
+
+        // 💥 FIX: Guard clause to prevent reading from null/undefined result 💥
+        if (!result || !result.secure_url) {
+          return reject(
+            new Error('Upload result was incomplete or missing URL.')
+          );
+        }
         console.log('Cloudinary upload success:', result.secure_url);
         resolve(result.secure_url);
       }

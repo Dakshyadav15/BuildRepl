@@ -3,7 +3,6 @@ import { formatEmail } from './helpers.js';
 
 // A 'describe' block groups related tests together
 describe('formatEmail Utility', () => {
-
   // 'test' or 'it' defines an individual test case
   test('should trim whitespace and convert to lowercase', () => {
     const input = '  Test@Email.COM  ';
@@ -25,5 +24,4 @@ describe('formatEmail Utility', () => {
   test('should return correct format for already-clean email', () => {
     expect(formatEmail('clean@example.com')).toBe('clean@example.com');
   });
-
 });

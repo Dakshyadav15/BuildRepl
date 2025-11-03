@@ -21,31 +21,31 @@ const searchPosts = async (query) => {
           text: {
             query: query,
             path: {
-              wildcard: '*' // Search all fields (title, text, etc.)
+              wildcard: '*', // Search all fields (title, text, etc.)
             },
-            fuzzy: {} // Allow for small typos
-          }
-        }
+            fuzzy: {}, // Allow for small typos
+          },
+        },
       },
       {
-        $limit: 10 // Limit to 10 results
+        $limit: 10, // Limit to 10 results
       },
       {
-        $project: { // Only return the fields we need
+        $project: {
+          // Only return the fields we need
           title: 1,
           text: 1,
           imageUrl: 1,
           name: 1,
-          date: 1
+          date: 1,
           // Exclude search score unless you want it
-          // score: { $meta: "searchScore" } 
-        }
-      }
+          // score: { $meta: "searchScore" }
+        },
+      },
     ];
 
     const posts = await Post.aggregate(pipeline);
     return posts;
-
   } catch (err) {
     console.error('Error during search aggregation:', err.message);
     return [];

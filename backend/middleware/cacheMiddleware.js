@@ -10,7 +10,7 @@ const cacheMiddleware = (keyPrefix, expiration = 3600) => {
   return async (req, res, next) => {
     // Generate cache key based on route and query params
     const cacheKey = `${keyPrefix}:${req.user?.id || 'all'}:${JSON.stringify(req.query)}`;
-    
+
     try {
       const cachedData = await getOrSetCache(
         cacheKey,
@@ -21,30 +21,31 @@ const cacheMiddleware = (keyPrefix, expiration = 3600) => {
         },
         expiration
       );
-      
+
       if (cachedData) {
         // Cache hit - send cached data
         res.setHeader('X-Cache-Status', 'HIT');
         return res.json(cachedData);
       }
-      
+
       // Cache miss - continue to route handler
       res.setHeader('X-Cache-Status', 'MISS');
-      
+
       // Store original json method
       const originalJson = res.json.bind(res);
-      
+
       // Override json method to cache the response
-      res.json = function(data) {
+      res.json = function (data) {
         // Cache the data
         const { redisClient } = require('../utils/cache');
-        redisClient.setEx(cacheKey, expiration, JSON.stringify(data))
-          .catch(err => console.error('Failed to cache response:', err));
-        
+        redisClient
+          .setEx(cacheKey, expiration, JSON.stringify(data))
+          .catch((err) => console.error('Failed to cache response:', err));
+
         // Send the response
         return originalJson(data);
       };
-      
+
       next();
     } catch (err) {
       console.error('Cache middleware error:', err);

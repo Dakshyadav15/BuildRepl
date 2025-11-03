@@ -4,11 +4,10 @@ const { searchPosts } = require('../utils/search'); // This file doesn't exist y
 // Mock the Mongoose Post model
 jest.mock('../models/Post', () => ({
   // We mock 'aggregate' because that's what MongoDB Atlas Search uses
-  aggregate: jest.fn(), 
+  aggregate: jest.fn(),
 }));
 
 describe('Search Utility', () => {
-
   beforeEach(() => {
     // Clear all mock history before each test
     jest.clearAllMocks();
@@ -17,7 +16,7 @@ describe('Search Utility', () => {
   it('should call the database aggregate function with the correct search query', async () => {
     const query = 'test post';
     const mockResults = [{ title: 'A post about testing' }];
-    
+
     // Arrange: Make the mock function return our mock results
     Post.aggregate.mockResolvedValue(mockResults);
 
