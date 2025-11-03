@@ -31,7 +31,7 @@ router.post('/', [auth, upload], async (req, res) => {
         throw uploadError;
       }
     }
-    
+
     const user = await User.findById(req.user.id).select('-password');
 
     const newPost = new Post({
@@ -41,15 +41,14 @@ router.post('/', [auth, upload], async (req, res) => {
       user: req.user.id,
       imageUrl: imageUrl,
     });
-    
+
     const post = await newPost.save();
     console.log('Post saved successfully!');
-    
+
     // Invalidate posts cache after creating new post
     await invalidateCachePattern('posts:*');
-    
-    res.status(201).json(post);
 
+    res.status(201).json(post);
   } catch (err) {
     console.error('=== ERROR CREATING POST ===');
     console.error('Error message:', err.message);
@@ -79,10 +78,10 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
     await post.deleteOne();
-    
+
     // Invalidate posts cache after deleting post
     await invalidateCachePattern('posts:*');
-    
+
     res.json({ msg: 'Post removed' });
   } catch (err) {
     console.error(err.message);

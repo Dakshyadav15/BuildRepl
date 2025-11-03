@@ -26,18 +26,16 @@ describe('Auth Routes', () => {
     await new User({
       name: 'Test User',
       email: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
     }).save();
 
     // Try to register again with the same email
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Another User',
-        email: 'test@example.com',
-        password: 'password456'
-      });
-    
+    const res = await request(app).post('/api/auth/register').send({
+      name: 'Another User',
+      email: 'test@example.com',
+      password: 'password456',
+    });
+
     // Assuming your API correctly handles this
     expect(res.statusCode).toBe(400);
   });
@@ -45,7 +43,6 @@ describe('Auth Routes', () => {
 
 // --- 3. POST ROUTES TESTS ---
 describe('Post Routes', () => {
-
   // Create the mock user before each test in this suite
   beforeEach(async () => {
     // Ensure the user exists in the DB for User.findById()
@@ -55,8 +52,8 @@ describe('Post Routes', () => {
         $set: {
           name: 'Mock User',
           email: 'mock@user.com',
-          password: 'mockpassword'
-        }
+          password: 'mockpassword',
+        },
       },
       { upsert: true } // Creates the user if it doesn't exist
     );
@@ -70,7 +67,7 @@ describe('Post Routes', () => {
     const response = await request(app)
       .post('/api/posts')
       // 💥 FIX: Added the required title field 💥
-      .field('title', 'Test Post Title') 
+      .field('title', 'Test Post Title')
       // ----------------------------------------
       .field('text', 'This is the post text.')
       .attach('image', path.join(__dirname, 'test-image.png'));
@@ -79,7 +76,7 @@ describe('Post Routes', () => {
     expect(response.statusCode).toBe(201);
     expect(response.body.imageUrl).toBe('http://mocked.url/new-image.jpg');
     // We must now expect the title to be in the body too
-    expect(response.body.title).toBe('Test Post Title'); 
+    expect(response.body.title).toBe('Test Post Title');
     expect(response.body.text).toBe('This is the post text.');
     expect(response.body.user).toBe(mockUserId);
 
