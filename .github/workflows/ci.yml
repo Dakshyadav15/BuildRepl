@@ -1,0 +1,123 @@
+name: BuildRepl CI/CD Pipeline
+
+# 1. Controls when the action runs
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # --- JOB 1: RUN ALL BACKEND TESTS (UNIT + INTEGRATION) ---
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend # Run all commands in the 'backend' folder
+
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 3. Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-modules-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: 4. Install Dependencies
+        run: npm install
+
+      - name: 5. Run Backend Tests
+        # This runs all Jest tests (unit + integration)
+        run: npm test -- --coverage
+        env:
+          # Provide mock secrets for the test environment
+          MONGO_URI: "mongodb://localhost/testdb"
+          JWT_SECRET: "test-secret"
+          CLOUDINARY_CLOUD_NAME: "test"
+          CLOUDINARY_API_KEY: "test"
+          CLOUDINARY_API_SECRET: "test"
+          REDIS_URL: "redis://localhost:6379"
+
+  # --- JOB 2: RUN ALL FRONTEND TESTS (UNIT + INTERACTION) ---
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend # Run all commands in the 'frontend' folder
+
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 3. Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-modules-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: 4. Install Dependencies
+        run: npm install
+
+      - name: 5. Run Frontend Tests
+        # This runs all Vitest tests and exits (no watch mode)
+        run: npm test -- --run
+
+  # --- JOB 3: RUN ALL E2E TESTS (CYPRESS) ---
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    # This job will only run if the backend and frontend tests pass
+    needs: [backend-tests, frontend-tests] 
+
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      
+      # Install dependencies for both frontend and backend
+      - name: 3. Install Frontend Dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: 4. Install Backend Dependencies
+        run: npm install
+        working-directory: ./backend
+      
+      - name: 5. Run Cypress E2E Tests
+        # This action is made by Cypress. It installs, builds, 
+        # starts the servers, and runs the tests all in one go.
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./frontend # Tell Cypress where the frontend is
+          build: npm run build # Command to build the frontend
+          start: |
+            npm start --prefix backend &
+            npm run preview --prefix frontend &
+          wait-on: 'http://localhost:5173' # Wait for frontend server
+          wait-on-timeout: 120
+        env:
+          # Provide mock secrets for the E2E servers
+          MONGO_URI: "mongodb://localhost/testdb"
+          JWT_SECRET: "test-secret"
+          CLOUDINARY_CLOUD_NAME: "test"
+          CLOUDINARY_API_KEY: "test"
+          CLOUDINARY_API_SECRET: "test"
+          REDIS_URL: "redis://localhost:6379"
