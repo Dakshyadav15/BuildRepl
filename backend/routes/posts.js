@@ -3,15 +3,14 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Post = require('../models/Post');
 const User = require('../models/User');
-
-// Import Multer middleware and Cloudinary uploader
 const upload = require('../middleware/upload');
 const { uploadImage } = require('../utils/imageUploader');
+const cacheMiddleware = require('../middleware/cacheMiddleware');
+const { invalidateCachePattern } = require('../utils/cache');
 
 // @route   POST api/posts
 router.post('/', [auth, upload], async (req, res) => {
   try {
-    // Get both title and text from request body
     const { title, text } = req.body;
     const file = req.file;
 
@@ -19,17 +18,9 @@ router.post('/', [auth, upload], async (req, res) => {
     console.log('Title:', title);
     console.log('Text:', text);
     console.log('File received:', file ? 'YES' : 'NO');
-    if (file) {
-      console.log('File details:', {
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size
-      });
-    }
 
     let imageUrl = null;
 
-    // Upload image if file exists
     if (file) {
       console.log('Attempting to upload to Cloudinary...');
       try {
@@ -43,9 +34,8 @@ router.post('/', [auth, upload], async (req, res) => {
     
     const user = await User.findById(req.user.id).select('-password');
 
-    // Create the new post with title
     const newPost = new Post({
-      title: title,  // ADD THIS
+      title: title,
       text: text,
       name: user.name,
       user: req.user.id,
@@ -54,7 +44,11 @@ router.post('/', [auth, upload], async (req, res) => {
     
     const post = await newPost.save();
     console.log('Post saved successfully!');
-    res.json(post);
+    
+    // Invalidate posts cache after creating new post
+    await invalidateCachePattern('posts:*');
+    
+    res.status(201).json(post);
 
   } catch (err) {
     console.error('=== ERROR CREATING POST ===');
@@ -65,7 +59,8 @@ router.post('/', [auth, upload], async (req, res) => {
 });
 
 // @route   GET api/posts
-router.get('/', auth, async (req, res) => {
+// Apply cache middleware with 5 minute expiration
+router.get('/', [auth, cacheMiddleware('posts', 300)], async (req, res) => {
   try {
     const posts = await Post.find().sort({ date: -1 });
     res.json(posts);
@@ -84,6 +79,10 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
     await post.deleteOne();
+    
+    // Invalidate posts cache after deleting post
+    await invalidateCachePattern('posts:*');
+    
     res.json({ msg: 'Post removed' });
   } catch (err) {
     console.error(err.message);

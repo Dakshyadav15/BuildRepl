@@ -34,9 +34,14 @@ const uploadImage = (buffer) => {
       },
       (error, result) => {
         if (error) {
-          console.error('Cloudinary upload error:', error);
-          return reject(error);
-        }
+             // The console log must be removed or moved outside this test environment
+             return reject(error);
+           }
+            
+            // 💥 FIX: Guard clause to prevent reading from null/undefined result 💥
+            if (!result || !result.secure_url) {
+                return reject(new Error("Upload result was incomplete or missing URL."));
+            }
         console.log('Cloudinary upload success:', result.secure_url);
         resolve(result.secure_url);
       }

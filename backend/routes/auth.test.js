@@ -69,12 +69,17 @@ describe('Post Routes', () => {
     // Send the request
     const response = await request(app)
       .post('/api/posts')
+      // 💥 FIX: Added the required title field 💥
+      .field('title', 'Test Post Title') 
+      // ----------------------------------------
       .field('text', 'This is the post text.')
       .attach('image', path.join(__dirname, 'test-image.png'));
 
     // Assert
     expect(response.statusCode).toBe(201);
     expect(response.body.imageUrl).toBe('http://mocked.url/new-image.jpg');
+    // We must now expect the title to be in the body too
+    expect(response.body.title).toBe('Test Post Title'); 
     expect(response.body.text).toBe('This is the post text.');
     expect(response.body.user).toBe(mockUserId);
 
