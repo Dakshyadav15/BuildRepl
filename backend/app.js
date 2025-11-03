@@ -19,6 +19,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // --- Define All Your Routes ---
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/posts', require('./routes/posts'));
-
+app.use('/api/search', require('./routes/search'));
 // Just export the app
 module.exports = app;

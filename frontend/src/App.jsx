@@ -8,6 +8,10 @@ import Dashboard from './components/dashboard/Dashboard';
 import PrivateRoute from './components/routing/PrivateRoute';
 import CreatePost from './components/post/CreatePost';
 import PostItem from './components/post/PostItem';
+
+// --- 1. IMPORT THE NEW SEARCH COMPONENT ---
+import Search from './components/search/Search';
+
 const App = () => {
   return (
     <AuthProvider>
@@ -20,6 +24,18 @@ const App = () => {
             path="/dashboard" 
             element={ <PrivateRoute> <Dashboard /> </PrivateRoute> } 
           />
+          <Route 
+            path="/create-post" 
+            element={ <PrivateRoute> <CreatePost /> </PrivateRoute> } 
+          />
+          <Route 
+            path="/posts/:id" 
+            element={ <PrivateRoute> <PostItem /> </PrivateRoute> } 
+          />
+          
+          {/* --- 2. ADD THE SEARCH ROUTE --- */}
+          <Route path="/search" element={<Search />} />
+          
           <Route path="/" element={<Login />} />
         </Routes>
       </div>
