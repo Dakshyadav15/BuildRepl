@@ -1,10 +1,25 @@
+// backend/middleware/upload.js
 const multer = require('multer');
 
-// Store the file in memory as a Buffer
+// Use memory storage to keep file in buffer (for Cloudinary)
 const storage = multer.memoryStorage();
 
-// Create the multer instance. We'll expect a single file 
-// with the field name 'image'
-const upload = multer({ storage: storage }).single('image');
+// File filter to only accept images
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Not an image! Please upload only images.'), false);
+  }
+};
+
+// Configure multer
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+}).single('image'); // 'image' should match the field name from frontend
 
 module.exports = upload;

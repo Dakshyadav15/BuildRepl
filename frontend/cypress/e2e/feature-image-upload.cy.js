@@ -1,5 +1,4 @@
-// Ignore the unhandled exception error caused by the application's catch block,
-// allowing the test to continue after the mocked login success.
+// Ignore the unhandled exception error caused by the application's catch block
 Cypress.on('uncaught:exception', (err, runnable) => {
   if (err.message.includes("Cannot read properties of undefined (reading 'data')")) {
     return false
@@ -9,14 +8,18 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 
 describe('Feature: Image Upload (Day 4 E2E)', () => {
 
-  // We need a stable user ID for the app's internal logic
   const mockUserId = '654321098765432109876543'; 
+
+  beforeEach(() => {
+    // Clear localStorage before each test
+    cy.clearLocalStorage();
+  });
 
   it('allows a logged-in user to create a post with an image on the Dashboard', () => {
     
     // --- MOCK 1: INITIAL LOAD/TOKEN CHECK (GET /api/auth) ---
-    // This runs inside AuthContext's useEffect. It must pass instantly.
-    cy.intercept('GET', '/api/auth', {
+    // Need to use the full URL with the API base
+    cy.intercept('GET', 'http://localhost:5000/api/auth', {
       statusCode: 200,
       body: {
         _id: mockUserId,
@@ -25,38 +28,41 @@ describe('Feature: Image Upload (Day 4 E2E)', () => {
       }
     }).as('loadUserCheck');
 
-
-    // --- MOCK 2: LOGIN (POST /api/auth/login) ---
-    cy.intercept('POST', '/api/auth/login', {
+    // --- MOCK 2: GET EXISTING POSTS ---
+    cy.intercept('GET', 'http://localhost:5000/api/posts', {
       statusCode: 200,
-      body: { token: 'fake-e2e-token' }
-    }).as('loginRequest');
+      body: []
+    }).as('getPosts');
 
-    // --- 3. PERFORM LOGIN & WAIT FOR CONTENT ---
-    cy.visit('/login');
-    cy.get('input#email').type('test@example.com');
-    cy.get('input#password').type('password123');
-    cy.get('button[type="submit"]').click();
-    
-    // Wait for the login POST to finish
-    cy.wait('@loginRequest');
-
-    // ✅ FINAL FIX: Wait for the content to render. 
-    // This succeeds because the GET /api/auth mock prevented the redirect.
-    cy.contains('Dashboard').should('be.visible'); 
-    cy.url().should('include', '/dashboard'); 
-
-    // --- 4. MOCK POST CREATION API ---
-    cy.intercept('POST', '/api/posts', { 
-      statusCode: 201, 
+    // --- MOCK 3: POST CREATION API ---
+    cy.intercept('POST', 'http://localhost:5000/api/posts', { 
+      statusCode: 200,
       body: { 
         _id: '123post',
         title: 'E2E Post Title', 
         text: 'E2E post content.',
         imageUrl: 'http://e2e-mock.url/image.jpg',
-        name: 'Mock User' 
+        name: 'Mock User',
+        user: mockUserId,
+        date: new Date().toISOString()
       }
     }).as('createPost');
+    
+    // --- 4. SET TOKEN AND VISIT DASHBOARD ---
+    // Set token in localStorage before visiting the page
+    cy.visit('/dashboard', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('token', 'fake-e2e-token');
+      }
+    });
+    
+    // Wait for user to load
+    cy.wait('@loadUserCheck');
+    cy.wait('@getPosts');
+
+    // Verify we're on the dashboard
+    cy.contains('Dashboard').should('be.visible'); 
+    cy.contains('Welcome, Mock User').should('be.visible');
     
     // --- 5. INTERACT WITH THE FORM ---
     // Fill the Title input
@@ -77,6 +83,7 @@ describe('Feature: Image Upload (Day 4 E2E)', () => {
     
     // Assert the Title and Image are now visible in the post feed
     cy.contains('E2E Post Title').should('be.visible');
+    cy.contains('E2E post content.').should('be.visible');
 
     cy.get('img.post-cover-image')
       .should('be.visible')
