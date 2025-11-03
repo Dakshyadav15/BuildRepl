@@ -36,6 +36,7 @@ jobs:
 
       - name: 5. Run Backend Tests
         # This runs all Jest tests (unit + integration)
+        # We added --coverage to enforce the coverage gate
         run: npm test -- --coverage
         env:
           # Provide mock secrets for the test environment
@@ -76,12 +77,53 @@ jobs:
         # This runs all Vitest tests and exits (no watch mode)
         run: npm test -- --run
 
-  # --- JOB 3: RUN ALL E2E TESTS (CYPRESS) ---
+  # --- JOB 3: NEW LINTING JOB ---
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Cache and install for backend
+      - name: 3. Cache Backend Modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-modules-${{ hashFiles('backend/package-lock.json') }}
+      - name: 4. Install Backend Dependencies
+        run: npm install
+        working-directory: ./backend
+
+      # Cache and install for frontend
+      - name: 5. Cache Frontend Modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-modules-${{ hashFiles('frontend/package-lock.json') }}
+      - name: 6. Install Frontend Dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      # Run both linters
+      - name: 7. Run Backend Linter
+        run: npm run lint
+        working-directory: ./backend
+
+      - name: 8. Run Frontend Linter
+        run: npm run lint
+        working-directory: ./frontend
+
+  # --- JOB 4: RUN ALL E2E TESTS (CYPRESS) ---
   e2e-tests:
     runs-on: ubuntu-latest
     
-    # This job will only run if the backend and frontend tests pass
-    needs: [backend-tests, frontend-tests] 
+    # MODIFIED: Now depends on the new linting job as well
+    needs: [backend-tests, frontend-tests, linting] 
 
     steps:
       - name: 1. Checkout Code
@@ -121,3 +163,4 @@ jobs:
           CLOUDINARY_API_KEY: "test"
           CLOUDINARY_API_SECRET: "test"
           REDIS_URL: "redis://localhost:6379"
+
