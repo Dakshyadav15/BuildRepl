@@ -6,7 +6,7 @@ import { describe, test, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 
 import Login from './Login'; // Adjust path if needed
-import  AuthContext  from '../../context/AuthContext'; // Adjust path
+import AuthContext from '../../context/AuthContext'; // Adjust path
 
 // Helper function to render the component with a mock context
 const renderLoginWithContext = (mockLoginFunction) => {
@@ -28,7 +28,6 @@ const renderLoginWithContext = (mockLoginFunction) => {
 };
 
 describe('Login Component', () => {
-
   test('allows a user to type and submit the form', async () => {
     // 1. Create a "mock function" (a spy) that we can track
     const mockLogin = vi.fn();
@@ -55,9 +54,8 @@ describe('Login Component', () => {
     // 6. Simulate user clicking the submit button
     await user.click(submitButton);
     expect(mockLogin).toHaveBeenCalledWith({
-  email: 'test@example.com',
-  password: 'password123'
-});
+      email: 'test@example.com',
+      password: 'password123',
+    });
   });
-
 });
