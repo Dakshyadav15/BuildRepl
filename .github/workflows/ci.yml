@@ -176,7 +176,6 @@ jobs:
         with:
           working-directory: ./frontend 
           install: false
-          build: false
           node-version: 20.19.0
           start: |
             npm --prefix ../backend start &
