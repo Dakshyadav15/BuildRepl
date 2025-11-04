@@ -79,8 +79,13 @@ jobs:
           rm -f package-lock.json || true
           rm -rf node_modules || true
           npm install
+      
+      - name: 4b. Show resolved testing env
+        run: |
+          node -v
+          npm -v
+          node -e "console.log('env', require('./vite.config.js').default?.test?.environment || 'unknown')"
 
-      # This job uses 'vitest' which doesn't seem to have the permission issue
       - name: 5. Run Frontend Tests
         run: npm test -- --run
 
@@ -154,6 +159,8 @@ jobs:
           rm -f package-lock.json || true
           rm -rf node_modules || true
           npm install
+          node -v
+          npm -v
         working-directory: ./frontend
 
       - name: 4. Install Backend Dependencies

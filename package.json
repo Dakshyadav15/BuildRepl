@@ -2,8 +2,5 @@
   "devDependencies": {
     "eslint": "^9.39.0",
     "prettier": "^3.6.2"
-  },
-  "overrides": {
-    "whatwg-url": "11.0.0"
   }
 }
