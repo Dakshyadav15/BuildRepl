@@ -9,8 +9,8 @@ export default defineConfig({
     // available globally, just like in Jest.
     globals: true,
 
-    // This simulates a browser environment (the DOM) for our tests.
-    environment: 'jsdom',
+    // Use happy-dom to avoid jsdom dependency issues in CI
+    environment: 'happy-dom',
 
     // This points to our setup file.
     setupFiles: './src/setupTests.js',
