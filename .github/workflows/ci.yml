@@ -166,17 +166,23 @@ jobs:
       - name: 4. Install Backend Dependencies
         run: npm install
         working-directory: ./backend
+
+      - name: 4b. Build Frontend (Node 20)
+        run: npm run build
+        working-directory: ./frontend
       
       - name: 5. Run Cypress E2E Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./frontend 
-          build: npm run build 
+          install: false
+          build: false
+          node-version: 20.19.0
           start: |
             npm --prefix ../backend start &
             npm run preview -- --port 5173 &
           wait-on: 'http://localhost:5173' 
-          wait-on-timeout: 120
+          wait-on-timeout: 150
         env:
           MONGO_URI: "mongodb://localhost/testdb"
           JWT_SECRET: "test-secret"
