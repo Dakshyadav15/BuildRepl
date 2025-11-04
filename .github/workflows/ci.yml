@@ -84,7 +84,7 @@ jobs:
         run: |
           node -v
           npm -v
-          node -e "console.log('env', require('./vite.config.js').default?.test?.environment || 'unknown')"
+          node -e "import('./vite.config.js').then(m => console.log('env', m.default?.test?.environment || 'unknown'))"
 
       - name: 5. Run Frontend Tests
         run: npm test -- --run
