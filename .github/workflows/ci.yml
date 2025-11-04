@@ -151,8 +151,8 @@ jobs:
           node-version: 20.19.0
 
       # Backend audit
-      - name: 3. Install Backend Dependencies (ci)
-        run: npm ci
+      - name: 3. Install Backend Dependencies
+        run: npm install
         working-directory: ./backend
 
       - name: 4. Run Backend Security Audit (moderate+)
@@ -160,8 +160,8 @@ jobs:
         working-directory: ./backend
 
       # Frontend audit
-      - name: 5. Install Frontend Dependencies (ci)
-        run: npm ci
+      - name: 5. Install Frontend Dependencies
+        run: npm install
         working-directory: ./frontend
 
       - name: 6. Run Frontend Security Audit (moderate+)
