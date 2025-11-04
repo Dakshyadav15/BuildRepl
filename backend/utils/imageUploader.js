@@ -1,9 +1,11 @@
 // backend/utils/imageUploader.js
-const { v2: cloudinary } = require('cloudinary');
-const { Readable } = require('stream');
+import cloudinaryPkg from 'cloudinary';
+import { Readable } from 'node:stream';
+import dotenv from 'dotenv';
 
-// Load environment variables
-require('dotenv').config();
+const { v2: cloudinary } = cloudinaryPkg;
+
+dotenv.config();
 
 // Configure Cloudinary with your .env variables
 cloudinary.config({
@@ -12,19 +14,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Add this debug log to verify config is loaded
-console.log('Cloudinary Config:', {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY ? '✓ Set' : '✗ Missing',
-  api_secret: process.env.CLOUDINARY_API_SECRET ? '✓ Set' : '✗ Missing',
-});
-
 /**
  * Uploads a file buffer to Cloudinary
  * @param {Buffer} buffer - The file data in memory
  * @returns {Promise<string>} A promise that resolves with the secure URL
  */
-const uploadImage = (buffer) => {
+export const uploadImage = (buffer) => {
   return new Promise((resolve, reject) => {
     // Create an upload stream
     const stream = cloudinary.uploader.upload_stream(
@@ -33,18 +28,10 @@ const uploadImage = (buffer) => {
         folder: 'social-media-posts', // Optional: organize in folders
       },
       (error, result) => {
-        if (error) {
-          // The console log must be removed or moved outside this test environment
-          return reject(error);
-        }
-
-        // 💥 FIX: Guard clause to prevent reading from null/undefined result 💥
+        if (error) return reject(error);
         if (!result || !result.secure_url) {
-          return reject(
-            new Error('Upload result was incomplete or missing URL.')
-          );
+          return reject(new Error('Upload result was incomplete or missing URL.'));
         }
-        console.log('Cloudinary upload success:', result.secure_url);
         resolve(result.secure_url);
       }
     );
@@ -54,4 +41,4 @@ const uploadImage = (buffer) => {
   });
 };
 
-module.exports = { uploadImage };
+export default { uploadImage };

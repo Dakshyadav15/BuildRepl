@@ -1,31 +1,13 @@
+import { jest } from '@jest/globals';
+import { getOrSetCache, setRedisClient } from './cache.js';
+
 // 1. Define the mock client methods FIRST.
 const mockRedisClient = {
   get: jest.fn(),
   setEx: jest.fn(),
-  on: jest.fn(), // Added the required method
+  on: jest.fn(),
   isOpen: true,
 };
-
-// Define the factory function.
-const mockRedisFactory = () => mockRedisClient;
-
-// 2. Mock the 'redis' module using the factory.
-jest.mock('redis', () => ({
-  createClient: mockRedisFactory,
-  connect: jest.fn().mockResolvedValue(true),
-}));
-
-// We use requireActual to import the real code safely.
-const { getOrSetCache } = jest.requireActual('./cache');
-
-// 3. Mock the redisClient export to ensure the implementation uses our mock methods.
-jest.mock('./cache', () => {
-  const originalModule = jest.requireActual('./cache');
-  return {
-    ...originalModule,
-    redisClient: mockRedisClient,
-  };
-});
 
 describe('Cache Utility', () => {
   let mockCallback;
@@ -34,6 +16,7 @@ describe('Cache Utility', () => {
     jest.clearAllMocks();
     mockCallback = jest.fn().mockResolvedValue({ data: 'fresh data' });
     mockRedisClient.get.mockResolvedValue(null);
+    setRedisClient(mockRedisClient);
   });
 
   it('should return fresh data on cache miss and store it', async () => {

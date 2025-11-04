@@ -1,5 +1,5 @@
 // backend/middleware/upload.js
-const multer = require('multer');
+import multer from 'multer';
 
 // Use memory storage to keep file in buffer (for Cloudinary)
 const storage = multer.memoryStorage();
@@ -22,4 +22,4 @@ const upload = multer({
   },
 }).single('image'); // 'image' should match the field name from frontend
 
-module.exports = upload;
+export default upload;

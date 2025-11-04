@@ -1,27 +1,28 @@
-const redis = require('redis');
+import { createClient } from 'redis';
 
 // Create Redis client (Do NOT connect here. Connection happens in server.js)
-const redisClient = redis.createClient({
+let redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT || 6379,
+    port: Number(process.env.REDIS_PORT) || 6379,
   },
 });
 
 // Handle Redis connection events (for debugging)
-// FIX: Check if the 'on' method exists before calling it, bypassing the crash in Jest.
 if (typeof redisClient.on === 'function') {
   redisClient.on('error', (err) => {
     console.error('Redis Client Error:', err);
   });
-
   redisClient.on('connect', () => {
     console.log('Redis Client Connected');
   });
 }
 
-// We expose the client and the connection function so server.js can start it.
-const connectRedis = async () => {
+export const setRedisClient = (client) => {
+  redisClient = client;
+};
+
+export const connectRedis = async () => {
   try {
     await redisClient.connect();
   } catch (err) {
@@ -29,10 +30,7 @@ const connectRedis = async () => {
   }
 };
 
-/**
- * Get data from cache or set it if not exists
- */
-const getOrSetCache = async (key, cb, expiration = 3600) => {
+export const getOrSetCache = async (key, cb, expiration = 3600) => {
   try {
     if (redisClient.isOpen === false) {
       console.warn('Redis client is not connected. Bypassing cache.');
@@ -42,7 +40,6 @@ const getOrSetCache = async (key, cb, expiration = 3600) => {
     const cachedData = await redisClient.get(key);
 
     if (cachedData) {
-      console.log(`Cache HIT for key: ${key}`);
       return JSON.parse(cachedData);
     }
 
@@ -58,32 +55,22 @@ const getOrSetCache = async (key, cb, expiration = 3600) => {
   }
 };
 
-/**
- * Invalidate (delete) cache by key
- */
-const invalidateCache = async (key) => {
+export const invalidateCache = async (key) => {
   try {
     if (redisClient.isOpen) {
       await redisClient.del(key);
-      console.log(`Cache invalidated for key: ${key}`);
     }
   } catch (err) {
     console.error('Cache invalidation error:', err);
   }
 };
 
-/**
- * Invalidate cache by pattern
- */
-const invalidateCachePattern = async (pattern) => {
+export const invalidateCachePattern = async (pattern) => {
   try {
     if (redisClient.isOpen) {
       const keys = await redisClient.keys(pattern);
       if (keys.length > 0) {
         await redisClient.del(keys);
-        console.log(
-          `Cache invalidated for pattern: ${pattern}, keys: ${keys.length}`
-        );
       }
     }
   } catch (err) {
@@ -91,10 +78,4 @@ const invalidateCachePattern = async (pattern) => {
   }
 };
 
-module.exports = {
-  redisClient,
-  connectRedis,
-  getOrSetCache,
-  invalidateCache, // Correctly defined and exported
-  invalidateCachePattern, // Correctly defined and exported
-};
+export { redisClient };
