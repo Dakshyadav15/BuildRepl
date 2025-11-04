@@ -138,11 +138,41 @@ jobs:
         run: npm run lint
         working-directory: ./frontend
 
-  # --- JOB 4: RUN ALL E2E TESTS (CYPRESS) ---
+  # --- JOB 4: SECURITY AUDIT (OWASP Gate) ---
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js v20.19
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+
+      # Backend audit
+      - name: 3. Install Backend Dependencies (ci)
+        run: npm ci
+        working-directory: ./backend
+
+      - name: 4. Run Backend Security Audit (moderate+)
+        run: npm audit --audit-level=moderate
+        working-directory: ./backend
+
+      # Frontend audit
+      - name: 5. Install Frontend Dependencies (ci)
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: 6. Run Frontend Security Audit (moderate+)
+        run: npm audit --audit-level=moderate
+        working-directory: ./frontend
+
+  # --- JOB 5: RUN ALL E2E TESTS (CYPRESS) ---
   e2e-tests:
     runs-on: ubuntu-latest
     
-    needs: [backend-tests, frontend-tests, linting] 
+    needs: [backend-tests, frontend-tests, linting, security-audit] 
 
     steps:
       - name: 1. Checkout Code
