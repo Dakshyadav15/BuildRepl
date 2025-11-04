@@ -176,14 +176,14 @@ jobs:
         with:
           working-directory: ./frontend 
           install: false
-          node-version: 20.19.0
+          build: echo "skip build"
           start: |
             npm --prefix ../backend start &
             npm run preview -- --port 5173 &
           wait-on: 'http://localhost:5173' 
           wait-on-timeout: 150
         env:
-          MONGO_URI: "mongodb://localhost/testdb"
+          USE_MEM_MONGO: "1"
           JWT_SECRET: "test-secret"
           CLOUDINARY_CLOUD_NAME: "test"
           CLOUDINARY_API_KEY: "test"

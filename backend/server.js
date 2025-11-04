@@ -6,19 +6,29 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-const connectDB = async () => {
+async function resolveMongoUri() {
+  if (process.env.USE_MEM_MONGO === '1' || process.env.NODE_ENV === 'test') {
+    const { MongoMemoryServer } = await import('mongodb-memory-server');
+    const mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    console.log('Using in-memory MongoDB');
+    return uri;
+  }
+  return process.env.MONGO_URI;
+}
+
+async function start() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    const mongoUri = await resolveMongoUri();
+    await mongoose.connect(mongoUri);
     console.log('MongoDB Connected...');
+    app.listen(PORT, () =>
+      console.log(`Server started on port http://localhost:${PORT}`)
+    );
   } catch (err) {
-    console.error(err.message);
+    console.error('Failed to start server', err);
     process.exit(1);
   }
-};
-connectDB();
+}
 
-// Start Server
-app.listen(PORT, () =>
-  console.log(`Server started on port http://localhost:${PORT}`)
-);
+start();
