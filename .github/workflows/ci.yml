@@ -148,10 +148,10 @@ jobs:
       - name: 1. Checkout Code
         uses: actions/checkout@v4
 
-      - name: 2. Setup Node.js v18
+      - name: 2. Setup Node.js v20.19
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20.19.0
       
       # Install dependencies for both frontend and backend
       - name: 3. Install Frontend Dependencies (clean)
@@ -173,8 +173,8 @@ jobs:
           working-directory: ./frontend 
           build: npm run build 
           start: |
-            npm start --prefix backend &
-            npm run preview --prefix frontend &
+            npm --prefix ../backend start &
+            npm run preview -- --port 5173 &
           wait-on: 'http://localhost:5173' 
           wait-on-timeout: 120
         env:
