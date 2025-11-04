@@ -1,13 +1,14 @@
-const express = require('express');
+import express from 'express';
+import { searchPosts } from '../utils/search.js';
+
 const router = express.Router();
-const { searchPosts } = require('../utils/search');
 
 // @route   GET api/search
 // @desc    Search posts by query
 // @access  Public (or Private with 'auth' middleware)
 router.get('/', async (req, res) => {
   try {
-    const query = req.query.q; // Get query from URL (e.g., /api/search?q=testing)
+    const query = req.query.q;
     const results = await searchPosts(query);
     res.json(results);
   } catch (err) {
@@ -16,4 +17,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

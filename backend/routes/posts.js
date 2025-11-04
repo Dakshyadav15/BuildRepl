@@ -1,12 +1,13 @@
-const express = require('express');
+import express from 'express';
+import auth from '../middleware/auth.js';
+import Post from '../models/Post.js';
+import User from '../models/User.js';
+import upload from '../middleware/upload.js';
+import { uploadImage } from '../utils/imageUploader.js';
+import cacheMiddleware from '../middleware/cacheMiddleware.js';
+import { invalidateCachePattern } from '../utils/cache.js';
+
 const router = express.Router();
-const auth = require('../middleware/auth');
-const Post = require('../models/Post');
-const User = require('../models/User');
-const upload = require('../middleware/upload');
-const { uploadImage } = require('../utils/imageUploader');
-const cacheMiddleware = require('../middleware/cacheMiddleware');
-const { invalidateCachePattern } = require('../utils/cache');
 
 // @route   POST api/posts
 router.post('/', [auth, upload], async (req, res) => {
@@ -14,18 +15,11 @@ router.post('/', [auth, upload], async (req, res) => {
     const { title, text } = req.body;
     const file = req.file;
 
-    console.log('=== POST REQUEST DEBUG ===');
-    console.log('Title:', title);
-    console.log('Text:', text);
-    console.log('File received:', file ? 'YES' : 'NO');
-
     let imageUrl = null;
 
     if (file) {
-      console.log('Attempting to upload to Cloudinary...');
       try {
         imageUrl = await uploadImage(file.buffer);
-        console.log('Upload successful! URL:', imageUrl);
       } catch (uploadError) {
         console.error('Cloudinary upload failed:', uploadError);
         throw uploadError;
@@ -43,16 +37,12 @@ router.post('/', [auth, upload], async (req, res) => {
     });
 
     const post = await newPost.save();
-    console.log('Post saved successfully!');
 
     // Invalidate posts cache after creating new post
     await invalidateCachePattern('posts:*');
 
     res.status(201).json(post);
   } catch (err) {
-    console.error('=== ERROR CREATING POST ===');
-    console.error('Error message:', err.message);
-    console.error('Full error:', err);
     res.status(500).json({ msg: 'Server Error', error: err.message });
   }
 });
@@ -64,7 +54,6 @@ router.get('/', [auth, cacheMiddleware('posts', 300)], async (req, res) => {
     const posts = await Post.find().sort({ date: -1 });
     res.json(posts);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -84,9 +73,8 @@ router.delete('/:id', auth, async (req, res) => {
 
     res.json({ msg: 'Post removed' });
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
 
-module.exports = router;
+export default router;

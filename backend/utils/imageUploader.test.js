@@ -1,18 +1,20 @@
 // backend/utils/imageUploader.test.js
-import { uploadImage } from './imageUploader';
-import { v2 as cloudinary } from 'cloudinary';
+import { jest } from '@jest/globals';
 
-// Mock the entire cloudinary module
-jest.mock('cloudinary', () => ({
-  v2: {
-    uploader: {
-      // Mock the upload_stream function
-      upload_stream: jest.fn(),
-    },
-    // Mock the config function (it does nothing)
-    config: jest.fn(),
+// Mock the entire cloudinary module BEFORE importing the SUT
+const v2Mock = {
+  uploader: {
+    upload_stream: jest.fn(),
   },
+  config: jest.fn(),
+};
+await jest.unstable_mockModule('cloudinary', () => ({
+  default: { v2: v2Mock },
+  v2: v2Mock,
 }));
+
+const { v2: cloudinary } = await import('cloudinary');
+const { uploadImage } = await import('./imageUploader.js');
 
 describe('imageUploader Utility', () => {
   // Clear all mocks before each test

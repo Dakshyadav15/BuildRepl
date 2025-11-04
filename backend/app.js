@@ -1,6 +1,10 @@
 // backend/app.js
-const cors = require('cors');
-const express = require('express');
+import cors from 'cors';
+import express from 'express';
+import authRouter from './routes/auth.js';
+import postsRouter from './routes/posts.js';
+import searchRouter from './routes/search.js';
+
 const app = express();
 
 // --- CORS Configuration ---
@@ -19,8 +23,8 @@ app.use(express.json({ limit: '50mb', extended: false }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // --- Define All Your Routes ---
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/posts', require('./routes/posts'));
-app.use('/api/search', require('./routes/search'));
-// Just export the app
-module.exports = app;
+app.use('/api/auth', authRouter);
+app.use('/api/posts', postsRouter);
+app.use('/api/search', searchRouter);
+
+export default app;

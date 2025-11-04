@@ -1,51 +1,54 @@
-const mongoose = require('mongoose');
-const path = require('path');
-const request = require('supertest');
-const app = require('../app');
-const User = require('../models/User');
-const Post = require('../models/Post');
-const { uploadImage } = require('../utils/imageUploader');
+import { jest } from '@jest/globals';
+import mongoose from 'mongoose';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import request from 'supertest';
+import User from '../models/User.js';
+import Post from '../models/Post.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // --- 1. MOCK DEPENDENCIES ---
 const mockUserId = new mongoose.Types.ObjectId().toString();
 
-// Mock the uploader utility
-jest.mock('../utils/imageUploader');
+// Mock modules BEFORE importing app/router
+await jest.unstable_mockModule('../middleware/auth.js', () => ({
+  default: (req, res, next) => {
+    req.user = { id: mockUserId };
+    next();
+  },
+}));
 
-// Mock the auth middleware
-jest.mock('../middleware/auth', () => (req, res, next) => {
-  req.user = { id: mockUserId }; // Use the valid ID
-  next();
-});
+await jest.unstable_mockModule('../utils/imageUploader.js', () => ({
+  uploadImage: jest.fn(),
+}));
+
+const { default: app } = await import('../app.js');
+const { uploadImage } = await import('../utils/imageUploader.js');
 
 // --- 2. AUTH ROUTES TESTS ---
 describe('Auth Routes', () => {
-  // This test is here so the suite is not empty
   it('should fail to register a user with duplicate email', async () => {
-    // Create a user in the DB
     await new User({
       name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
     }).save();
 
-    // Try to register again with the same email
     const res = await request(app).post('/api/auth/register').send({
       name: 'Another User',
       email: 'test@example.com',
       password: 'password456',
     });
 
-    // Assuming your API correctly handles this
     expect(res.statusCode).toBe(400);
   });
 });
 
 // --- 3. POST ROUTES TESTS ---
 describe('Post Routes', () => {
-  // Create the mock user before each test in this suite
   beforeEach(async () => {
-    // Ensure the user exists in the DB for User.findById()
     await User.updateOne(
       { _id: mockUserId },
       {
@@ -55,32 +58,25 @@ describe('Post Routes', () => {
           password: 'mockpassword',
         },
       },
-      { upsert: true } // Creates the user if it doesn't exist
+      { upsert: true }
     );
   });
 
   it('should create a new post with an uploaded image URL', async () => {
-    // Mock the uploader to return a fake URL
     uploadImage.mockResolvedValue('http://mocked.url/new-image.jpg');
 
-    // Send the request
     const response = await request(app)
       .post('/api/posts')
-      // 💥 FIX: Added the required title field 💥
       .field('title', 'Test Post Title')
-      // ----------------------------------------
       .field('text', 'This is the post text.')
       .attach('image', path.join(__dirname, 'test-image.png'));
 
-    // Assert
     expect(response.statusCode).toBe(201);
     expect(response.body.imageUrl).toBe('http://mocked.url/new-image.jpg');
-    // We must now expect the title to be in the body too
     expect(response.body.title).toBe('Test Post Title');
     expect(response.body.text).toBe('This is the post text.');
     expect(response.body.user).toBe(mockUserId);
 
-    // Assert Database
     const postInDb = await Post.findById(response.body._id);
     expect(postInDb.imageUrl).toBe('http://mocked.url/new-image.jpg');
   });

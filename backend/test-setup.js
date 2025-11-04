@@ -1,6 +1,7 @@
-// backend/test-setup.js
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongoose = require('mongoose');
+// backend/test-setup.js (ESM)
+import { jest } from '@jest/globals';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
 
 let mongoServer;
 
@@ -16,13 +17,13 @@ beforeAll(async () => {
 afterAll(async () => {
   // Close Redis connection if it exists
   try {
-    const { redisClient } = require('./utils/cache');
+    const { default: cacheUtils } = await import('./utils/cache.js');
+    const { redisClient } = cacheUtils || {};
     if (redisClient && redisClient.isOpen) {
       await redisClient.quit();
-      console.log('Redis client closed');
     }
   } catch (err) {
-    console.log('No Redis client to close');
+    // ignore
   }
 
   // Disconnect mongoose
