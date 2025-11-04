@@ -51,6 +51,14 @@ jobs:
           CLOUDINARY_API_SECRET: "test"
           REDIS_URL: "redis://localhost:6379"
 
+      - name: Upload Backend Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend/coverage/
+          if-no-files-found: warn
+
   # --- JOB 2: RUN ALL FRONTEND TESTS (UNIT + INTERACTION) ---
   frontend-tests:
     runs-on: ubuntu-latest
@@ -219,6 +227,17 @@ jobs:
           CLOUDINARY_API_KEY: "test"
           CLOUDINARY_API_SECRET: "test"
           REDIS_URL: "redis://localhost:6379"
+
+      - name: Upload Cypress E2E Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-e2e-report
+          path: |
+            frontend/cypress/reports/**
+            frontend/cypress/screenshots/**
+            frontend/cypress/videos/**
+          if-no-files-found: warn
 
   # --- JOB 6: DEPLOY TO PRODUCTION (CD) ---
   deploy:
