@@ -30,7 +30,9 @@ export const uploadImage = (buffer) => {
       (error, result) => {
         if (error) return reject(error);
         if (!result || !result.secure_url) {
-          return reject(new Error('Upload result was incomplete or missing URL.'));
+          return reject(
+            new Error('Upload result was incomplete or missing URL.')
+          );
         }
         resolve(result.secure_url);
       }
