@@ -34,6 +34,10 @@ jobs:
       - name: 4. Install Dependencies
         run: npm install
 
+      # --- FIX: ADD EXECTUE PERMISSIONS ---
+      - name: 4a. Add Execute Permissions
+        run: chmod +x ./node_modules/.bin/jest
+
       - name: 5. Run Backend Tests
         # This runs all Jest tests (unit + integration)
         # We added --coverage to enforce the coverage gate
@@ -73,8 +77,8 @@ jobs:
       - name: 4. Install Dependencies
         run: npm install
 
+      # This job uses 'vitest' which doesn't seem to have the permission issue
       - name: 5. Run Frontend Tests
-        # This runs all Vitest tests and exits (no watch mode)
         run: npm test -- --run
 
   # --- JOB 3: NEW LINTING JOB ---
@@ -99,6 +103,10 @@ jobs:
         run: npm install
         working-directory: ./backend
 
+      # --- FIX: ADD EXECTUE PERMISSIONS ---
+      - name: 4a. Add Backend Execute Permissions
+        run: chmod +x ./backend/node_modules/.bin/eslint
+
       # Cache and install for frontend
       - name: 5. Cache Frontend Modules
         uses: actions/cache@v4
@@ -108,6 +116,10 @@ jobs:
       - name: 6. Install Frontend Dependencies
         run: npm install
         working-directory: ./frontend
+
+      # --- FIX: ADD EXECTUE PERMISSIONS ---
+      - name: 6a. Add Frontend Execute Permissions
+        run: chmod +x ./frontend/node_modules/.bin/eslint
 
       # Run both linters
       - name: 7. Run Backend Linter
@@ -122,7 +134,6 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     
-    # MODIFIED: Now depends on the new linting job as well
     needs: [backend-tests, frontend-tests, linting] 
 
     steps:
@@ -144,19 +155,16 @@ jobs:
         working-directory: ./backend
       
       - name: 5. Run Cypress E2E Tests
-        # This action is made by Cypress. It installs, builds, 
-        # starts the servers, and runs the tests all in one go.
         uses: cypress-io/github-action@v6
         with:
-          working-directory: ./frontend # Tell Cypress where the frontend is
-          build: npm run build # Command to build the frontend
+          working-directory: ./frontend 
+          build: npm run build 
           start: |
             npm start --prefix backend &
             npm run preview --prefix frontend &
-          wait-on: 'http://localhost:5173' # Wait for frontend server
+          wait-on: 'http://localhost:5173' 
           wait-on-timeout: 120
         env:
-          # Provide mock secrets for the E2E servers
           MONGO_URI: "mongodb://localhost/testdb"
           JWT_SECRET: "test-secret"
           CLOUDINARY_CLOUD_NAME: "test"
