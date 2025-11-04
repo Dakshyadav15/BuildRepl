@@ -220,6 +220,7 @@ jobs:
             npm run preview -- --host 127.0.0.1 --port 5173
           wait-on: 'http://127.0.0.1:5173'
           wait-on-timeout: 300
+          config: video=true
         env:
           USE_MEM_MONGO: "1"
           JWT_SECRET: "test-secret"
@@ -227,6 +228,7 @@ jobs:
           CLOUDINARY_API_KEY: "test"
           CLOUDINARY_API_SECRET: "test"
           REDIS_URL: "redis://localhost:6379"
+          CYPRESS_video: "true"
 
       - name: Upload Cypress E2E Report
         if: always()
