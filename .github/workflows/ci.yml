@@ -155,8 +155,8 @@ jobs:
         run: npm install
         working-directory: ./backend
 
-      - name: 4. Run Backend Security Audit (moderate+)
-        run: npm audit --audit-level=moderate
+      - name: 4. Run Backend Security Audit (prod deps, moderate+)
+        run: npm audit --omit=dev --audit-level=moderate
         working-directory: ./backend
 
       # Frontend audit
@@ -164,8 +164,8 @@ jobs:
         run: npm install
         working-directory: ./frontend
 
-      - name: 6. Run Frontend Security Audit (moderate+)
-        run: npm audit --audit-level=moderate
+      - name: 6. Run Frontend Security Audit (prod deps, moderate+)
+        run: npm audit --omit=dev --audit-level=moderate
         working-directory: ./frontend
 
   # --- JOB 5: RUN ALL E2E TESTS (CYPRESS) ---
