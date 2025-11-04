@@ -178,10 +178,10 @@ jobs:
           install: false
           build: echo "skip build"
           start: |
-            npm --prefix ../backend start &
-            npm run preview -- --port 5173 &
-          wait-on: 'http://localhost:5173' 
-          wait-on-timeout: 150
+            npm --prefix ../backend start
+            npm run preview -- --host 127.0.0.1 --port 5173
+          wait-on: 'http://127.0.0.1:5173'
+          wait-on-timeout: 300
         env:
           USE_MEM_MONGO: "1"
           JWT_SECRET: "test-secret"
